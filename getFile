@@ -1,14 +1,11 @@
-#! /bin/bash
+#! /bin/bash -e
 
 # Resize VirtualBox 
-
-
 
 # first we need to stop the virtual machine using vagrant
 # so go the the path and stop the vitual machine
 echo "Enter the image name : "
 read imageName
-set -e
 cd ~/"VirtualBox VMs"/$imageName/ 
 
 # modifies the size of virtual box for the image
@@ -39,7 +36,6 @@ function convertToVdi
 function parseString
 {
     count=0
-    sc=0
     arr=$( cho $vminfo | tr "\n" "\n")
     for x in $arr
 	do
