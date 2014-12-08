@@ -1,0 +1,92 @@
+#! /bin/bash
+
+# Resize VirtualBox 
+
+
+
+# first we need to stop the virtual machine using vagrant
+# so go the the path and stop the vitual machine
+echo "Enter the image name : "
+read imageName
+set -e
+cd ~/"VirtualBox VMs"/$imageName/ 
+
+# modifies the size of virtual box for the image
+function resizeVm 
+{
+	VBoxManage showhdinfo $vdiFile
+	
+	echo "please enter the size in MBs you want : "	
+	read size
+	cd ~/"VirtualBox VMs"/$imageName/
+	VBoxManage modifyhd $vdiFile --resize $size
+	VBoxManage storageattach $imageName --storagectl $controller --port 0 --device 0 --type hdd --medium box-disk2.vdi
+}
+
+# convert .vmdk file to .vdi file
+function convertToVdi 
+{
+	echo "enter the file name you want to convert : "
+	read text
+	vdi="$text.vdi"
+
+	VBoxManage clonehd $vmdkFile $vdi --format vdi
+	resizeVm vdi
+
+}
+
+# after resizing we need to attach the controller, so parse the string to get the controller type
+function parseString
+{
+    count=0
+    sc=0
+    arr=$( cho $vminfo | tr "\n" "\n")
+    for x in $arr
+	do
+		count=`expr $count + 1`
+        controller=$x
+        if [ $count -ge 5 ]
+        then
+            break
+        fi
+   done
+}
+
+# store the ontroller type in a variable named controller
+vminfo=`VBoxManage showvminfo $imageName  | grep "Storage"`
+
+# after resizing we need to attach the controller, so parse the string to get the controller type
+function parseString
+{
+	count=0
+	sc=0
+	arr=$(echo $vminfo | tr "\n" "\n")
+	for x in $arr
+	do 
+		count=`expr $count + 1`
+		controller=$x
+		if [ $count -ge 5 ]
+		then
+			break
+		fi
+	done	
+}	
+
+parseString $vminfo
+prefix="./"
+if [ -e *.vdi ] 
+then
+	vdiFile=`find -name *.vdi`
+	#prefix="./"
+	vdiFile=${vdiFile#$prefix}
+	resizeVm $vdiFile	
+elif [-e *.vmdk]
+then	
+	vmdkFile=`find -name *.vmdk`
+	vmdkFile=${vmdkFile#prefix}
+	convertToVdi $vmdkFile
+else
+	echo "no such file with .vdi or .vmdk extension "
+fi
+
+
