@@ -2,13 +2,10 @@
 
 # Resize VirtualBox 
 
-# first we need to stop the virtual machine using vagrant
-# so go the the path and stop the vitual machine
 echo "Enter the image name : "
 read imageName
 cd ~/"VirtualBox VMs"/$imageName/ 
 
-# modifies the size of virtual box for the image
 function resizeVm 
 {
 	VBoxManage showhdinfo $vdiFile
@@ -20,7 +17,6 @@ function resizeVm
 	VBoxManage storageattach $imageName --storagectl $controller --port 0 --device 0 --type hdd --medium box-disk2.vdi
 }
 
-# convert .vmdk file to .vdi file
 function convertToVdi 
 {
 	echo "enter the file name you want to convert : "
@@ -32,7 +28,6 @@ function convertToVdi
 
 }
 
-# after resizing we need to attach the controller, so parse the string to get the controller type
 function parseString
 {
     count=0
@@ -48,10 +43,8 @@ function parseString
    done
 }
 
-# store the ontroller type in a variable named controller
 vminfo=`VBoxManage showvminfo $imageName  | grep "Storage"`
 
-# after resizing we need to attach the controller, so parse the string to get the controller type
 function parseString
 {
 	count=0
