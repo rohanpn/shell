@@ -1,0 +1,81 @@
+#! /bin/bash -e
+
+# Resize VirtualBox 
+
+echo "Enter the image name : "
+read image
+cd ~/"VirtualBox VMs"/$image/ 
+
+function resizeVm 
+{
+	VBoxManage showhdinfo $vdiFile
+	
+	echo "please enter the size in MBs you want : "	
+	read size
+	cd ~/"VirtualBox VMs"/$image/
+	VBoxManage modifyhd $vdiFile --resize $size
+	VBoxManage storageattach $image --storagectl $controller --port 0 --device 0 --type hdd --medium box-disk2.vdi
+}
+
+function convertToVdi 
+{
+	echo "enter the file name you want to convert : "
+	read text
+	vdi="$text.vdi"
+
+	VBoxManage clonehd $vmdkFile $vdi --format vdi
+	resizeVm vdi
+
+}
+
+function parseString
+{
+    count=0
+    arr=$( cho $vminfo | tr "\n" "\n")
+    for x in $arr
+	do
+		count=`expr $count + 1`
+        controller=$x
+        if [ $count -ge 5 ]
+        then
+            break
+        fi
+   done
+}
+
+vminfo=`VBoxManage showvminfo $image  | grep "Storage"`
+
+function parseString
+{
+	count=0
+	sc=0
+	arr=$(echo $vminfo | tr "\n" "\n")
+	for x in $arr
+	do 
+		count=`expr $count + 1`
+		controller=$x
+		if [ $count -ge 5 ]
+		then
+			break
+		fi
+	done	
+}	
+
+parseString $vminfo
+prefix="./"
+if [ -e *.vdi ] 
+then
+	vdiFile=`find -name *.vdi`
+	#prefix="./"
+	vdiFile=${vdiFile#$prefix}
+	resizeVm $vdiFile	
+elif [-e *.vmdk]
+then	
+	vmdkFile=`find -name *.vmdk`
+	vmdkFile=${vmdkFile#prefix}
+	convertToVdi $vmdkFile
+else
+	echo "no such file with .vdi or .vmdk extension "
+fi
+
+
